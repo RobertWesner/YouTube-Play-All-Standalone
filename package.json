@@ -1,0 +1,19 @@
+{
+    "name": "ytpa-standalone",
+    "version": "1.0",
+    "private": true,
+    "license": "GPL-3.0-or-later",
+    "type": "module",
+    "scripts": {
+        "dev": "wxt",
+        "build": "wxt build -t chromium,firefox",
+        "zip": "wxt zip",
+        "preview": "wxt preview"
+    },
+    "devDependencies": {
+        "wxt": "^0.20.11"
+    },
+    "dependencies": {
+        "@wxt-dev/browser": "^0.1.4"
+    }
+}
