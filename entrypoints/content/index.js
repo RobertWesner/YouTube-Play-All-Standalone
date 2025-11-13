@@ -1,4 +1,4 @@
-import fix from '../../gm-polyfill.js';
+import shimGM from '../../gm-shim.js';
 import run from '../../prepared/ytpa.js';
 
 // noinspection JSUnusedGlobalSymbols
@@ -10,7 +10,7 @@ export default defineContentScript({
     async main() {
         try {
             const start = () => {
-                fix();
+                shimGM();
                 run();
             };
 

@@ -7,7 +7,7 @@ export default defineConfig({
         manifest_version: 3,
         name: 'YTPA - YouTube Play All',
         description: 'Standalone Extension for the YTPA userscript.',
-        version: meta.version,
+        version: meta.browserVersion,
         action: { default_title: 'YTPA' },
         permissions: ['storage'],
         host_permissions: ['https://*.youtube.com/*', 'https://ytplaylist.robert.wesner.io/*'],
