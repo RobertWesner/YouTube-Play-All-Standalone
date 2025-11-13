@@ -15,7 +15,7 @@ export default defineConfig({
             gecko: { id: 'ytpa-standalone@scripts.yt', strict_min_version: '128.0' },
         },
         content_security_policy: {
-            extension_pages: "script-src 'self'; object-src 'none';"
+            extension_pages: 'script-src \'self\'; object-src \'none\';',
         },
     },
 });
