@@ -4,7 +4,6 @@ import meta from './prepared/meta.json';
 // noinspection JSUnusedGlobalSymbols
 export default defineConfig({
     manifest: {
-        manifest_version: 3,
         name: 'YTPA - YouTube Play All',
         description: 'Standalone Extension for the YTPA userscript.',
         version: meta.browserVersion,
