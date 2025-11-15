@@ -1,11 +1,9 @@
-import meta from './prepared/meta.json';
+import meta from '../prepared/meta.json';
 import { browser } from '@wxt-dev/browser';
 
-const shimGM = () => {
-    window.GM_info = { script: { version: meta.version } };
-    window.GM ||= {};
-
-    GM.xmlHttpRequest = function (options) {
+export const GM_info = { script: { version: meta.version } };
+export const GM = {
+    xmlHttpRequest(options) {
         const { method = 'GET', url, headers, data } = options;
         // noinspection JSIgnoredPromiseFromCall
         browser.runtime.sendMessage(
@@ -36,7 +34,5 @@ const shimGM = () => {
                 options?.onload?.(out);
             },
         );
-    };
+    }
 };
-
-export default shimGM;

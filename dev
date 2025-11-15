@@ -1,0 +1,8 @@
+#!/bin/php
+<?php
+
+if ((int)explode('.', phpversion())[0] < 8) {
+    die('Running requires PHP 8.0 or later.');
+}
+
+require __DIR__ . '/scripts/run.php';

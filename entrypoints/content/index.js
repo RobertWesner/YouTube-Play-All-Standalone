@@ -1,4 +1,3 @@
-import shimGM from '../../gm-shim.js';
 import run from '../../prepared/ytpa.js';
 
 // noinspection JSUnusedGlobalSymbols
@@ -9,15 +8,10 @@ export default defineContentScript({
     run_at: 'document_start',
     async main() {
         try {
-            const start = () => {
-                shimGM();
-                run();
-            };
-
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', start, { once: true });
+                document.addEventListener('DOMContentLoaded', run, { once: true });
             } else {
-                start();
+                run();
             }
         } catch (e) {
             console.error('[YTPA] bootstrap failed:', e);

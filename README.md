@@ -2,11 +2,10 @@
 
 Standalone extension for the YouTube Play All userscript.
 
-## Preparing
+## Testing
 
-- `npm i`
+- `chmod +x build; ./dev`
 
 ## Building
 
-- `php prepare.php` -> downloads the script.user.js and fixes it to be loadable
-- `npm run zip` -> builds the extension
+- `chmod +x build; ./build`
