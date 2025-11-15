@@ -28,4 +28,9 @@ export default defineConfig({
             extension_pages: 'script-src \'self\'; object-src \'none\';',
         },
     },
+    vite: () => ({
+        build: {
+            minify: false,
+        },
+    }),
 });
