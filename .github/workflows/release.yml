@@ -35,7 +35,7 @@ jobs:
                 run: sudo apt-get update && sudo apt-get install -y imagemagick
 
             -   name: Run prepare.php
-                run: php prepare.php
+                run: php scripts/prepare.php
 
             -   name: Upload prepared files
                 uses: actions/upload-artifact@v4
