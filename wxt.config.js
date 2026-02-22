@@ -27,6 +27,12 @@ export default defineConfig({
         content_security_policy: {
             extension_pages: 'script-src \'self\'; object-src \'none\';',
         },
+        web_accessible_resources: [
+            {
+                resources: ["exposed/*", "exposed/js/*.js"],
+                matches: ["https://*.youtube.com/*"],
+            },
+        ],
     },
     vite: () => ({
         build: {

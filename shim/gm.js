@@ -1,8 +1,48 @@
 import meta from '../prepared/meta.json';
 import { browser } from '@wxt-dev/browser';
 
-export const GM_info = { script: { version: meta.version } };
+const api = globalThis.browser ?? globalThis.chrome;
+
+function promisifyChrome(fn, ...args) {
+    // Firefox `browser.*` returns promises. Chrome `chrome.*` uses callbacks.
+    try {
+        const result = fn(...args);
+        if (result && typeof result.then === 'function') return result;
+    } catch (err) {}
+
+    return new Promise((resolve, reject) => {
+        fn(...args, (result) => {
+            const err = api?.runtime?.lastError;
+            if (err) reject(err);
+            else resolve(result);
+        });
+    });
+}
+
+const createStorage = ({  } = {}) => {
+    const prefix = 'GM:';
+    
+    const area = api?.storage?.local;
+    if (!area) throw 'storage.local unavailable (missing "storage" permission?)';
+
+    const full = (k) => `${prefix}${k}`;
+
+    return {
+        getValue: async (key, defaultValue) => {
+            const obj = await promisifyChrome(area.get.bind(area), full(key));
+            return Object.prototype.hasOwnProperty.call(obj, full(key)) ? obj[full(key)] : defaultValue;
+        },
+        setValue: async (key, value) => promisifyChrome(area.set.bind(area), { [full(key)]: value }),
+        deleteValue: async key => promisifyChrome(area.remove.bind(area), full(key)),
+        listValues: async () => Object.keys(await promisifyChrome(area.get.bind(area), null))
+            .filter(key => key.startsWith(prefix))
+            .map(key => key.slice(prefix.length))
+            .sort(),
+    };
+};
+
 export const GM = {
+    info: { script: { version: meta.version } },
     xmlHttpRequest(options) {
         const { method = 'GET', url, headers, data } = options;
         // noinspection JSIgnoredPromiseFromCall
@@ -34,5 +74,10 @@ export const GM = {
                 options?.onload?.(out);
             },
         );
-    }
+    },
+    ...createStorage(),
 };
+
+/**
+ * @var {Record<any, any>} globalThis
+ */

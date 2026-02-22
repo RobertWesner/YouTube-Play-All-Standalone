@@ -1,7 +1,7 @@
 import { browser } from '@wxt-dev/browser';
 
 /**
- * Simple and very limited shim for GM.xmlHttpRequest() handling.
+ * Simple and very limited shim for GM handling.
  * Only useful for my specific use case, not a proper general shim!
  */
 const handle_GM_xmlHttpRequest = (msg, sendResponse) => {

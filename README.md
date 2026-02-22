@@ -4,8 +4,12 @@ Standalone extension for the YouTube Play All userscript.
 
 ## Testing
 
-- `chmod +x build; ./dev`
+```bash
+chmod +x build; ./dev
+```
 
 ## Building
 
-- `chmod +x build; ./build`
+```bash
+chmod +x build; ./build
+```

@@ -7,16 +7,32 @@ if (!is_dir($outputDir)) {
 
 exec(__DIR__ . '/icons.sh');
 
-$content = file_get_contents('https://github.com/RobertWesner/YouTube-Play-All/raw/main/script.user.js');
-$matches = [];
+$uri = 'https://github.com/RobertWesner/YouTube-Play-All/raw/main/script.user.js';
+if (($argv[1] ?? null) === 'development') {
+    $uri = 'https://github.com/RobertWesner/YouTube-Play-All/raw/refs/heads/development/script.user.js';
+}
+$content = file_get_contents($uri);
 
-preg_match('/(?<=\(async function \(\) {).*(?=}\)\(\))/ms', $content, $matches);
-$script = 'import { GM_info, GM } from "../shim/gm.js";const run = () => {' . $matches[0] . '};export default run;';
+$script = <<<JS
+    // noinspection All
+    import { GM } from '../shim/gm.js';
+    
+    const _environment_ = 'extension';
+    
+    const run = () => {
+    $content
+    };
+    
+    export default run;
+    JS;
 
 preg_match_all('/\/\/ @(\w+)\s+([^\n]+)/m', $content, $matches, PREG_SET_ORDER);
 $meta = array_column($matches, 2, 1);
 
 $parts = explode('-', $meta['version']);
+if (count($parts) <= 1) {
+    $parts = ['unstable', 'development'];
+}
 $meta['browserVersion'] = '1.0.' . $parts[0] . '.' . $parts[1];
 
 $dir = __DIR__ . '/../prepared';
