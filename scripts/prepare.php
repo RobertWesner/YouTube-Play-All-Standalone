@@ -31,7 +31,7 @@ $meta = array_column($matches, 2, 1);
 
 $parts = explode('-', $meta['version']);
 if (count($parts) <= 1) {
-    $parts = ['unstable', 'development'];
+    $parts = ['0', '0'];
 }
 $meta['browserVersion'] = '1.0.' . $parts[0] . '.' . $parts[1];
 

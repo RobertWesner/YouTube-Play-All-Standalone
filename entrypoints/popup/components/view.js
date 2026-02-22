@@ -1,0 +1,55 @@
+import { define, html } from 'hybrids';
+
+// noinspection JSUnusedGlobalSymbols
+export default define({
+    tag: 'ext-view',
+    title: 'YTPA',
+    subtitle: '',
+    render: ({ title, subtitle }) => html`
+        <style>
+            :host {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                padding: 1.2rem;
+                background: #890097;
+                background: linear-gradient(135deg, rgba(137, 0, 151, 1) 0%, rgba(32, 83, 184, 1) 100%);
+            }
+
+            #card {
+                background-color: white;
+                border-radius: var(--corner);
+                padding: 1rem;
+            }
+
+            #title {
+                text-align: center;
+                font-size: 2rem;
+                font-weight: bold;
+                margin-bottom: 1rem;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.42);
+                text-transform: uppercase;
+            }
+            
+            #subtitle {
+                font-size: 1.2rem;
+                text-align: center;
+                margin-bottom: 1rem;
+                text-transform: capitalize;
+            }
+            
+            #content {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+        </style>
+        <div id="card">
+            <div id="title">${title}</div>
+            ${subtitle && html`<div id="subtitle">${subtitle}</div>`}
+            <div id="content">
+                <slot></slot>
+            </div>
+        </div>
+    `,
+});

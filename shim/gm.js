@@ -1,8 +1,6 @@
 import meta from '../prepared/meta.json';
 import { browser } from '@wxt-dev/browser';
 
-const api = globalThis.browser ?? globalThis.chrome;
-
 function promisifyChrome(fn, ...args) {
     // Firefox `browser.*` returns promises. Chrome `chrome.*` uses callbacks.
     try {
@@ -12,7 +10,7 @@ function promisifyChrome(fn, ...args) {
 
     return new Promise((resolve, reject) => {
         fn(...args, (result) => {
-            const err = api?.runtime?.lastError;
+            const err = browser?.runtime?.lastError;
             if (err) reject(err);
             else resolve(result);
         });
@@ -22,7 +20,7 @@ function promisifyChrome(fn, ...args) {
 const createStorage = ({  } = {}) => {
     const prefix = 'GM:';
     
-    const area = api?.storage?.local;
+    const area = browser?.storage?.local;
     if (!area) throw 'storage.local unavailable (missing "storage" permission?)';
 
     const full = (k) => `${prefix}${k}`;

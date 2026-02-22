@@ -13,6 +13,9 @@
         "wxt": "^0.20.11"
     },
     "dependencies": {
-        "@wxt-dev/browser": "^0.1.4"
+        "@fortawesome/fontawesome-svg-core": "^7.2.0",
+        "@fortawesome/free-solid-svg-icons": "^7.2.0",
+        "@wxt-dev/browser": "^0.1.4",
+        "hybrids": "^9.1.22"
     }
 }

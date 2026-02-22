@@ -1,4 +1,5 @@
 import { browser } from '@wxt-dev/browser';
+import { executeDevCommand } from '../../src/ytpa-tools.js';
 
 /**
  * Simple and very limited shim for GM handling.
@@ -41,6 +42,15 @@ const handle_GM_xmlHttpRequest = (msg, sendResponse) => {
 
 // noinspection JSUnusedGlobalSymbols
 export default defineBackground(() => {
+    // (browser.action ?? browser.browserAction ?? {}).onClicked.addListener((tab) => {
+    //     if (!tab?.id) return;
+    //
+    //     executeDevCommand(
+    //         (...xs) => browser.tabs.sendMessage(tab.id, ...xs),
+    //         'showSettings',
+    //     );
+    // });
+
     browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (!msg || !msg?.type) return;
 

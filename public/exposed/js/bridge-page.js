@@ -1,4 +1,3 @@
-
 (() => {
     const pending = new Map();
     const mkid = () => Math.random().toString(36).slice(2);

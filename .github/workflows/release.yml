@@ -1,0 +1,140 @@
+# I'll be honest, I let ChatGPT write this one, I don't know GitHub CI as well as I do GitLab CI.
+name: Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: "Upstream tag (e.g. 20260222-0)"
+                required: true
+                type: string
+            source_repo:
+                description: "Upstream repo (for traceability)"
+                required: false
+                default: ""
+                type: string
+    push:
+        tags:
+            - "*"
+
+permissions:
+    contents: write
+
+jobs:
+    prepare:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v4
+
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                  php-version: "8.3"
+
+            -   name: Install ImageMagick
+                run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+            -   name: Run prepare.php
+                run: php prepare.php
+
+            -   name: Upload prepared files
+                uses: actions/upload-artifact@v4
+                with:
+                    name: prepared
+                    path: |
+                        prepared/ytpa.js
+                        prepared/meta.json
+                    if-no-files-found: error
+
+    build-and-release:
+        runs-on: ubuntu-latest
+        needs: prepare
+
+        steps:
+            - uses: actions/checkout@v4
+
+            -   name: Download prepared files
+                uses: actions/download-artifact@v4
+                with:
+                    name: prepared
+                    path: prepared
+
+            -   name: Compute release tag
+                id: tag
+                env:
+                    GH_TOKEN: ${{ github.token }}
+                    EVENT_NAME: ${{ github.event_name }}
+                    UPSTREAM_TAG: ${{ inputs.tag }}
+                    GITHUB_REF: ${{ github.ref }}
+                    REPO: ${{ github.repository }}
+                shell: bash
+                run: |
+                    set -euo pipefail
+                    
+                    if [[ "$EVENT_NAME" == "push" && "$GITHUB_REF" == refs/tags/* ]]; then
+                      # Manual tag in this repo -> use exactly what was pushed
+                      release_tag="${GITHUB_REF#refs/tags/}"
+                      echo "release_tag=${release_tag}" >> "$GITHUB_OUTPUT"
+                      exit 0
+                    fi
+                    
+                    if [[ -z "${UPSTREAM_TAG:-}" ]]; then
+                      echo "Missing inputs.tag for workflow_dispatch" >&2
+                      exit 1
+                    fi
+                    
+                    # Strip leading v from upstream
+                    upstream_clean="${UPSTREAM_TAG#v}"
+                    
+                    # Convert 20260222-0 -> 20260222.0
+                    upstream_converted="${upstream_clean//-/.}"
+                    
+                    # Get latest downstream release tag (strip leading v)
+                    latest_tag=""
+                    if gh api "repos/$REPO/releases/latest" --jq .tag_name >/tmp/latest_tag 2>/dev/null; then
+                      latest_tag="$(cat /tmp/latest_tag || true)"
+                    fi
+                    latest_tag="${latest_tag#v}"
+                    
+                    # Determine prefix from first two segments, default 1.0.
+                    prefix="1.0."
+                    if [[ -n "${latest_tag}" ]]; then
+                      IFS='.' read -r a b _rest <<< "${latest_tag}"
+                      if [[ "${a:-}" =~ ^[0-9]+$ && "${b:-}" =~ ^[0-9]+$ ]]; then
+                        prefix="${a}.${b}."
+                      fi
+                    fi
+                    
+                    # Final downstream tag (always prefixed with v)
+                    release_tag="v${prefix}${upstream_converted}"
+                    
+                    echo "release_tag=${release_tag}" >> "$GITHUB_OUTPUT"
+
+            -   name: Setup Node
+                uses: actions/setup-node@v4
+                with:
+                  node-version: "20"
+                  cache: "npm"
+
+            -   run: npm ci
+            -   run: npm run zip -- --mv2 -b firefox
+            -   run: npm run zip -- --mv3 -b chromium
+
+            -   name: Verify output zips exist
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  test -n "$(ls -1 ./.output/*-chromium.zip 2>/dev/null | head -n 1)"
+                  test -n "$(ls -1 ./.output/*-firefox.zip 2>/dev/null | head -n 1)"
+
+            -   name: Create GitHub Release with both zips
+                uses: softprops/action-gh-release@v2
+                with:
+                  tag_name: ${{ steps.tag.outputs.release_tag }}
+                  name: ${{ steps.tag.outputs.release_tag }}
+                  generate_release_notes: true
+                  files: |
+                      ./.output/*-chromium.zip
+                      ./.output/*-firefox.zip
+                env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

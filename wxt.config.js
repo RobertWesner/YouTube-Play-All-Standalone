@@ -3,6 +3,11 @@ import meta from './prepared/meta.json';
 
 // noinspection JSUnusedGlobalSymbols
 export default defineConfig({
+    webExt: {
+        startUrls: [
+            'https://www.youtube.com/@TechnologyConnections/videos',
+        ],
+    },
     manifest: {
         name: 'YTPA - YouTube Play All',
         description: 'Standalone Extension for the YTPA userscript.',

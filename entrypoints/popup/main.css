@@ -1,0 +1,25 @@
+* {
+    box-sizing: border-box;
+}
+
+:focus {
+    outline: 3px solid cyan;
+}
+
+:root {
+    --corner: 0.6rem;
+    --corner-tl: var(--corner);
+    --corner-tr: var(--corner);
+    --corner-bl: var(--corner);
+    --corner-br: var(--corner);
+}
+
+body {
+    font-family: Montserrat, sans-serif;
+    font-size: 18px;
+    margin: 0;
+    min-width: 360px;
+    background-color: #b1a5ed;
+    display: flex;
+    flex-direction: column;
+}
