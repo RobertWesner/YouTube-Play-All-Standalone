@@ -43,6 +43,7 @@ jobs:
                     name: prepared
                     path: |
                         prepared/ytpa.js
+                        prepared/builder.js
                         prepared/meta.json
                     if-no-files-found: error
 

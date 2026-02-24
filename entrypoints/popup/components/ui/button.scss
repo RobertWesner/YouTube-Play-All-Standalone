@@ -1,0 +1,16 @@
+.button {
+    color: var(--color, black);
+    background: var(--background, rgba(0, 0, 0, 0.02));
+    border: var(--border, 1px solid rgba(0, 0, 0, 0.42));
+    border-radius: var(--corner);
+    padding: 0.4rem;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--background-hover, rgba(0, 0, 0, 0.05));
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+}

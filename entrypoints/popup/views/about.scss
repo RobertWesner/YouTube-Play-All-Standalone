@@ -1,0 +1,23 @@
+#about {
+    & .info-container {
+        padding: 0.6rem;
+        background-color: rgba(0, 0, 0, 0.064);
+        border-radius: var(--corner);
+
+        & .info {
+            &:not(:last-child) {
+                margin-bottom: 0.82rem;
+            }
+
+            & .info-title {
+                margin-bottom: 0.4rem;
+            }
+
+            & code {
+                padding: 0.2rem 0.64rem;
+                background-color: rgba(0, 0, 0, 0.115);
+                border-radius: var(--corner);
+            }
+        }
+    }
+}

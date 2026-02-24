@@ -1,0 +1,59 @@
+.buttonlist {
+    flex: 1;
+    display: flex;
+
+    & > .button:active {
+        transform: none;
+
+        & > * {
+            display: inline-block;
+            transform: translateY(1px);
+        }
+    }
+
+    & > .button:not(:first-child, :last-child, :first-child:last-child) {
+        border-radius: 0;
+    }
+
+    &[data-direction="column"] {
+        flex-direction: column;
+
+        & > .button {
+            &:not(:last-child) {
+                border-bottom-width: 0;
+            }
+
+            &:first-child {
+                border-bottom-right-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+
+            &:last-child {
+                border-top-right-radius: 0;
+                border-top-left-radius: 0;
+            }
+        }
+    }
+
+    &[data-direction="row"] {
+        flex-direction: row;
+
+        & > .button {
+            flex: 1;
+
+            &:not(:last-child) {
+                border-right-width: 0;
+            }
+
+            &:first-child {
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+
+            &:last-child {
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+        }
+    }
+}

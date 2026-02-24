@@ -10,12 +10,12 @@
         "zip": "wxt zip"
     },
     "devDependencies": {
+        "sass": "^1.97.3",
         "wxt": "^0.20.11"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^7.2.0",
         "@fortawesome/free-solid-svg-icons": "^7.2.0",
-        "@wxt-dev/browser": "^0.1.4",
-        "hybrids": "^9.1.22"
+        "@wxt-dev/browser": "^0.1.4"
     }
 }

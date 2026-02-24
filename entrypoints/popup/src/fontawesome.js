@@ -1,4 +1,5 @@
-import { define, html, } from 'hybrids';
+import { $builder } from '../../../prepared/builder.js';
+import { $component } from './component.js';
 import { icon as faIcon } from '@fortawesome/fontawesome-svg-core';
 import * as faSolid from '@fortawesome/free-solid-svg-icons';
 
@@ -14,7 +15,7 @@ const load = (type, fa) => {
                 : null,
         ).filter(x => x !== null),
     );
-}
+};
 
 const isIcon = (type, icon) => icons[type].hasOwnProperty(icon);
 const svg = (type, icon, height = '1em') => {
@@ -28,16 +29,16 @@ const svg = (type, icon, height = '1em') => {
         true,
     );
     result.style.height = height;
-    result.style.verticalAlign = 'middle';
+    result.style.verticalAlign = '-0.145em';
 
     return result;
 };
 
 load('solid', faSolid);
 
-define({
-    tag: 'fa-solid',
-    icon: '',
-    height: '1em',
-    render: ({ icon, height }, type = 'solid') => isIcon(type, icon) && html`${svg(type, icon, height).cloneNode(true)}`,
-});
+const getIcon = (type, icon, height) => isIcon(type, icon) && svg(type, icon, height).cloneNode(true);
+
+export const FaSolid = $component('span', (builder, {
+    icon,
+    height = '1em',
+}) => builder.onBuildAppend(getIcon('solid', icon, height)));

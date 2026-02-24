@@ -1,36 +1,43 @@
-import { define, html } from 'hybrids';
-import '../components/view.js';
-import '../components/ui/button-back.js';
-import { getTab } from '../src/tab.js';
-import sendCmd from '../src/cmd.js';
+import { $component } from '../src/component.js';
+import { getTab, runOnTab } from '../src/tab.js';
+import { sendCmd } from '../src/cmd.js';
+import { ButtonBack } from '../components/ui/button-back.js';
+import { Buttonlist } from '../components/ui/buttonlist.js';
+import { Button } from '../components/ui/button.js';
+import { View } from '../components/view.js';
 
 const showSettings = () => sendCmd('showSettings');
 const clearSettings = () => sendCmd('storage.clear');
 
-const ViewSettings = define({
-    tag: 'ext-view-settings',
-    tab: async () => getTab(),
-    render: ({ tab }) => html`
-        <ext-view title="ytpa" subtitle="settings">
-            ${html.resolve(tab.then(tab => (
-                !!tab && tab.url.match(/^https:\/\/.*?\.youtube\.com\//)
-            ) ? html`
-                <ext-buttonlist>
-                    <ext-button onclick="${showSettings}">
-                        Open settings dialog
-                    </ext-button>
-                    <ext-button background="#fcf4b3" background-hover="#f2e9a2" onclick="${clearSettings}">
-                        Clear settings
-                    </ext-button>
-                </ext-buttonlist>
-            ` : html`
-                Settings only available on YouTube.
-            `), html`
-                Loading...
-            `)}
-            <ext-button-back></ext-button-back>
-        </ext-view>
-    `,
-});
+export const SettingsView = $component('div', builder => {
+    const tab = getTab();
+    const debugInfo = tab.then(tab => runOnTab(
+        tab.id, () => document.querySelector('script#ytpa-debug-info').textContent,
+    ));
 
-export default ViewSettings;
+    return builder.onBuildAppend(
+        View.with({
+            id: 'settings',
+            title: 'ytpa',
+            subtitle: 'settings',
+        })(
+            $component.resolve(
+                Promise.all([tab, debugInfo]).then(([tab, debugInfo]) => [...(
+                    !!tab && tab.url.match(/^https:\/\/.*?\.youtube\.com\//)
+                ) ? [
+                    Buttonlist(
+                        Button.with({ onclick: showSettings })('Open settings dialog'),
+                        Button.with({
+                            background: '#fcf4b3',
+                            backgroundHover: '#f2e9a2',
+                            onclick: clearSettings,
+                        })('Clear settings'),
+                    ),
+                ] : [
+                    'Cannot load outside of YouTube.',
+                ], ButtonBack()]).catch(() => ['Cannot access current tab.']),
+                'Loading...',
+            ),
+        ),
+    );
+});
