@@ -83,7 +83,7 @@ jobs:
     name: Publish to Chrome Web Store
     needs: packages
     runs-on: ubuntu-latest
-    environment: browser-stores
+    environment: Stores
     steps:
       - uses: actions/download-artifact@v8
         with:
