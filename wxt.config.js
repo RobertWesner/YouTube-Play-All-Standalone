@@ -13,7 +13,7 @@ export default defineConfig({
         description: 'Standalone Extension for the YTPA userscript.',
         version: meta.browserVersion,
         action: { default_title: 'YTPA' },
-        permissions: ['storage', 'scripting', 'tabs'],
+        permissions: ['storage', 'scripting'],
         host_permissions: ['https://*.youtube.com/*', 'https://ytplaylist.robert.wesner.io/*'],
         browser_specific_settings: {
             gecko: {
