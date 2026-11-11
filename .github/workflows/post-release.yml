@@ -1,0 +1,133 @@
+name: Post-release / Browser stores
+
+# Certified GPT CI classic
+
+# workflow_run is intentional: releases made with GITHUB_TOKEN do not trigger
+# another workflow through the regular `release: published` event.
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+
+# Do not let two successful releases update both stores at once.
+concurrency:
+  group: browser-store-publishing
+  cancel-in-progress: false
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  packages:
+    name: Retrieve and verify release ZIPs
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_repository.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.verify.outputs.version }}
+    steps:
+      - name: Download ZIPs from the successful Release run
+        uses: actions/download-artifact@v8
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: release-packages-*
+          merge-multiple: true
+          path: packages
+
+      - name: Validate packages and manifest versions
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          chrome=(packages/*-chromium.zip)
+          firefox=(packages/*-firefox.zip)
+          if (( ${#chrome[@]} != 1 || ${#firefox[@]} != 1 )); then
+            echo "Expected exactly one Chromium and one Firefox ZIP" >&2
+            ls -la packages >&2
+            exit 1
+          fi
+
+          for file in "${chrome[0]}" "${firefox[0]}"; do
+            unzip -t "$file" >/dev/null
+            unzip -p "$file" manifest.json | jq -e '.manifest_version and .version' >/dev/null
+          done
+          chrome_version="$(unzip -p "${chrome[0]}" manifest.json | jq -r .version)"
+          firefox_version="$(unzip -p "${firefox[0]}" manifest.json | jq -r .version)"
+          test "$chrome_version" = "$firefox_version" || {
+            echo "Manifest versions disagree: $chrome_version vs $firefox_version" >&2
+            exit 1
+          }
+          firefox_guid="$(unzip -p "${firefox[0]}" manifest.json | jq -r '.browser_specific_settings.gecko.id // .applications.gecko.id // empty')"
+          test "$firefox_guid" = 'ytpa-standalone@scripts.yt' || {
+            echo "Unexpected Firefox add-on GUID: $firefox_guid" >&2
+            exit 1
+          }
+          echo "version=$chrome_version" >> "$GITHUB_OUTPUT"
+          echo "Ready to publish version $chrome_version" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Retain verified ZIPs for publishing jobs
+        uses: actions/upload-artifact@v7
+        with:
+          name: verified-store-packages
+          path: |
+            packages/*-chromium.zip
+            packages/*-firefox.zip
+          if-no-files-found: error
+          retention-days: 1
+
+  chrome:
+    name: Publish to Chrome Web Store
+    needs: packages
+    runs-on: ubuntu-latest
+    environment: browser-stores
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-store-packages
+          path: packages
+
+      # Chrome Web Store API v2 (not legacy v1.1).
+      - name: Upload and submit Chrome extension
+        uses: wdzeng/chrome-extension@v2
+        with:
+          extension-id: ${{ vars.CHROME_EXTENSION_ID }}
+          publisher-id: ${{ vars.CHROME_PUBLISHER_ID }}
+          zip-path: packages/*-chromium.zip
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          action: publish
+
+      - name: Report submission
+        env:
+          VERSION: ${{ needs.packages.outputs.version }}
+        run: echo "Chrome Web Store submission requested for $VERSION" >> "$GITHUB_STEP_SUMMARY"
+
+  firefox:
+    name: Publish to Firefox Add-ons
+    needs: packages
+    runs-on: ubuntu-latest
+    environment: browser-stores
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-store-packages
+          path: packages
+
+      - name: Upload and submit Firefox extension
+        uses: wdzeng/firefox-addon@v1
+        with:
+          addon-guid: ytpa-standalone@scripts.yt
+          xpi-path: packages/*-firefox.zip
+          self-hosted: false
+          jwt-issuer: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          jwt-secret: ${{ secrets.FIREFOX_JWT_SECRET }}
+
+      - name: Report submission
+        env:
+          VERSION: ${{ needs.packages.outputs.version }}
+        run: echo "Firefox Add-ons submission requested for $VERSION" >> "$GITHUB_STEP_SUMMARY"
